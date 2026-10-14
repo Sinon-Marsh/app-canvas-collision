@@ -67,7 +67,7 @@ function generateCircles(n) {
     }
 }
 
-// Función de colisión con física elástica 2D (Normal, Tangente y Separación)
+// Función robusta de detección y resolución de colisiones
 function checkCollisions() {
     // Restablecer el color original de todos los círculos en cada fotograma
     circles.forEach(circle => {
@@ -86,41 +86,34 @@ function checkCollisions() {
 
             // Si la distancia es menor a la suma de los radios, hay colisión
             if (distance < minDist) {
-                // Cambiar a color azul (#0000FF) durante el contacto
+                // Cambiar a color azul (#0000FF) durante la colisión
                 c1.color = "#0000FF";
                 c2.color = "#0000FF";
 
                 if (distance === 0) continue;
 
-                // 1. Vectores normal y tangente
+                // Dirección normal de la colisión
                 let nx = dx / distance;
                 let ny = dy / distance;
-                let tx = -ny;
-                let ty = nx;
 
-                // 2. Corrección de posición (Separa los círculos para eliminar el solapamiento)
+                // 1. Corrección de posición fuerte para separarlos inmediatamente
                 let overlap = minDist - distance;
-                c1.posX -= nx * overlap * 0.5;
-                c1.posY -= ny * overlap * 0.5;
-                c2.posX += nx * overlap * 0.5;
-                c2.posY += ny * overlap * 0.5;
+                // Empujamos a cada círculo la mitad de la superposición más un pequeño margen extra
+                let separation = (overlap / 2) + 0.5;
+                c1.posX -= nx * separation;
+                c1.posY -= ny * separation;
+                c2.posX += nx * separation;
+                c2.posY += ny * separation;
 
-                // 3. Proyección de velocidades sobre los vectores tangente y normal
-                let dpTan1 = c1.dx * tx + c1.dy * ty;
-                let dpTan2 = c2.dx * tx + c2.dy * ty;
+                // 2. Intercambio de velocidades relativas con componentes vectoriales
+                let kx = c1.dx - c2.dx;
+                let ky = c1.dy - c2.dy;
+                let p = 2 * (nx * kx + ny * ky) / 2; // Factor de masa igual (masa = 1)
 
-                let dpNorm1 = c1.dx * nx + c1.dy * ny;
-                let dpNorm2 = c2.dx * nx + c2.dy * ny;
-
-                // 4. Conservación de momento 1D en la dirección normal (masas iguales)
-                let momentum1 = dpNorm2;
-                let momentum2 = dpNorm1;
-
-                // 5. Actualizar vectores de velocidad finales
-                c1.dx = tx * dpTan1 + nx * momentum1;
-                c1.dy = ty * dpTan1 + ny * momentum1;
-                c2.dx = tx * dpTan2 + nx * momentum2;
-                c2.dy = ty * dpTan2 + ny * momentum2;
+                c1.dx -= p * nx;
+                c1.dy -= p * ny;
+                c2.dx += p * nx;
+                c2.dy += p * ny;
             }
         }
     }
@@ -130,7 +123,7 @@ function checkCollisions() {
 function animate() {
     ctx.clearRect(0, 0, window_width, window_height); // Limpiar canvas
     
-    checkCollisions(); // Verificar colisiones con física 2D
+    checkCollisions(); // Verificar colisiones con separación garantizada
 
     circles.forEach(circle => {
         circle.update(ctx); // Actualizar y dibujar cada círculo
