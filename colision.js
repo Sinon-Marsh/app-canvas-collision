@@ -1,7 +1,6 @@
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
-// Obtiene las dimensiones de la pantalla actual
 const window_height = window.innerHeight;
 const window_width = window.innerWidth;
 canvas.height = window_height;
@@ -37,13 +36,11 @@ class Circle {
     update(context) {
         this.draw(context);
 
-        // Actualizar la posición X
         this.posX += this.dx;
         if (this.posX + this.radius > window_width || this.posX - this.radius < 0) {
             this.dx = -this.dx;
         }
 
-        // Actualizar la posición Y
         this.posY += this.dy;
         if (this.posY + this.radius > window_height || this.posY - this.radius < 0) {
             this.dy = -this.dy;
@@ -55,18 +52,17 @@ let circles = [];
 
 function generateCircles(n) {
     for (let i = 0; i < n; i++) {
-        let radius = Math.random() * 30 + 20; // Radio entre 20 y 50
+        let radius = Math.random() * 30 + 20;
         let x = Math.random() * (window_width - radius * 2) + radius;
         let y = Math.random() * (window_height - radius * 2) + radius;
         let color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-        let speed = Math.random() * 4 + 1; // Velocidad entre 1 y 5 unidades
+        let speed = Math.random() * 4 + 1;
         let text = `cs${i + 1}`;
         circles.push(new Circle(x, y, radius, color, text, speed));
     }
 }
 
 function checkCollisions() {
-    // Restablecer el color original de todos los círculos en cada fotograma
     circles.forEach(circle => {
         circle.color = circle.originalColor;
     });
@@ -79,18 +75,28 @@ function checkCollisions() {
             let dx = c2.posX - c1.posX;
             let dy = c2.posY - c1.posY;
             let distance = Math.sqrt(dx * dx + dy * dy);
+            let minDist = c1.radius + c2.radius;
 
-            // Detección de colisión por distancia entre centros
-            if (distance < c1.radius + c2.radius) {
-                // Flashear en color azul (#0000FF)
+            if (distance < minDist) {
                 c1.color = "#0000FF";
                 c2.color = "#0000FF";
 
-                // Cambio de dirección (rebote opuesto)
-                c1.dx = -c1.dx;
-                c1.dy = -c1.dy;
-                c2.dx = -c2.dx;
-                c2.dy = -c2.dy;
+                // Corrección de posición (evita que se queden pegados)
+                let overlap = minDist - distance;
+                let angle = Math.atan2(dy, dx);
+                
+                c1.posX -= Math.cos(angle) * overlap * 0.5;
+                c1.posY -= Math.sin(angle) * overlap * 0.5;
+                c2.posX += Math.cos(angle) * overlap * 0.5;
+                c2.posY += Math.sin(angle) * overlap * 0.5;
+
+                // Intercambio elástico de velocidades
+                let tempDx = c1.dx;
+                let tempDy = c1.dy;
+                c1.dx = c2.dx;
+                c1.dy = c2.dy;
+                c2.dx = tempDx;
+                c2.dy = tempDy;
             }
         }
     }
@@ -98,16 +104,12 @@ function checkCollisions() {
 
 function animate() {
     ctx.clearRect(0, 0, window_width, window_height);
-    
     checkCollisions();
-
     circles.forEach(circle => {
         circle.update(ctx);
     });
-
     requestAnimationFrame(animate);
 }
 
-// Generar 20 círculos para la versión final local (3.0)
-generateCircles(20); 
+generateCircles(20);
 animate();
