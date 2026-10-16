@@ -3,23 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detección de Colisiones - Graficación</title>
+    <title>2.5 Interactividad con gráficos 2D - Gamaliel Jimenez</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
-            background-color: #333;
+            font-family: Arial, sans-serif;
+        }
+        #canvas-container {
+            position: relative;
         }
         canvas {
+            background-color: #fdfae5; /* Fondo tipo wallpaper pastel */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             display: block;
+        }
+        #contador {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 2px dashed #e67e22;
         }
     </style>
 </head>
 <body>
-    <!-- Elemento canvas requerido por el script -->
-    <canvas id="canvas"></canvas>
 
-    <!-- Enlace al archivo JavaScript de la práctica -->
+    <div id="canvas-container">
+        <div id="contador">Eliminadas: 0</div>
+        <canvas id="miCanvas" width="800" height="500"></canvas>
+    </div>
+
+    <!-- Script principal de la lógica -->
     <script src="colision.js"></script>
 </body>
 </html>
